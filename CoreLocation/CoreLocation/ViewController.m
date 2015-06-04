@@ -56,10 +56,10 @@
  */
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    NSLog(@"%s", __func__);
+    CLLocation *location = [locations lastObject];
     
-    // 停止获取
-    [self.locationManager stopUpdatingLocation];
+    // 打印获取到的位置的经纬度
+    NSLog(@"%f, %f", location.coordinate.latitude, location.coordinate.longitude);
 }
 
 #pragma mark - 懒加载
