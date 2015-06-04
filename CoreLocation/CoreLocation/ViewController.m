@@ -16,6 +16,23 @@
  */
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
+/**
+ *  上一次的位置信息
+ */
+@property (nonatomic, strong) CLLocation *previousLocation;
+
+/**
+ *  总路程
+ */
+@property (nonatomic, assign) CLLocationDistance sumDistance;
+
+/**
+ *  总时间
+ */
+@property (nonatomic, assign) NSTimeInterval sumTime;
+
+@property (nonatomic, weak) IBOutlet UILabel *label;
+
 @end
 
 @implementation ViewController
@@ -36,9 +53,6 @@
     // 设置代理
     self.locationManager.delegate = self;
     
-    // 设置获取频率
-    self.locationManager.distanceFilter = 1.0f;
-    
     // 设置精确度
     self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
     
@@ -56,10 +70,31 @@
  */
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    CLLocation *location = [locations lastObject];
+    CLLocation *newLocation = [locations lastObject];
     
-    // 打印获取到的位置的经纬度
-    NSLog(@"%f, %f", location.coordinate.latitude, location.coordinate.longitude);
+    if (self.previousLocation != nil) {
+        // 计算距离
+        CLLocationDistance distance = [newLocation distanceFromLocation:self.previousLocation];
+        
+        // 计算时间
+        NSTimeInterval dTime = [newLocation.timestamp timeIntervalSinceDate:self.previousLocation.timestamp];
+        
+        // 计算速度
+        CGFloat speed = distance / dTime;
+
+        // 累加时间
+        self.sumTime += dTime;
+        
+        // 累加距离
+        self.sumDistance += distance;
+        
+        // 计算平均速度
+        CGFloat avgSpeed = self.sumDistance / self.sumTime;
+        
+        self.label.text = [NSString stringWithFormat:@"您的移动速度：%f 您的移动距离：%f 您的平均速度%f", speed, self.sumDistance, avgSpeed];
+    }
+    
+    self.previousLocation = newLocation;
 }
 
 #pragma mark - 懒加载
